@@ -5,6 +5,8 @@ jdk:
   - oraclejdk8
 install:
   - gem install sass
+env:
+  - DIR=site
 script:
-  - cd site/
-  - sbt ++$TRAVIS_SCALA_VERSION compile
+  - cd $DIR
+  - sbt ++$TRAVIS_SCALA_VERSION test
