@@ -11,7 +11,7 @@
     },
     {
       "preparagraph": "Booleans in asserts can test equality.",
-      "code": "val v1 = 4\nval v2 = 4\nv1 === __",
+      "code": "val v1 = 4\nval v2 = 4\nv1 === v2",
       "solutions": [
         "v2"
       ],
@@ -19,7 +19,7 @@
     },
     {
       "preparagraph": "Sometimes we expect you to fill in the values",
-      "code": "assert(__ == 1 + 1)",
+      "code": "assert(2 == 1 + 1)",
       "solutions": [
         "2"
       ],
