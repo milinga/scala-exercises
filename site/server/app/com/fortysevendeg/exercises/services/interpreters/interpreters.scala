@@ -15,7 +15,8 @@ import com.fortysevendeg.exercises.models.{ UserDoobieStore }
 import com.fortysevendeg.exercises.services.free._
 
 class ProdInterpreters(implicit transactor: Transactor[Task]) {
-  val interpreters: ExercisesApp ~> Task = exerciseOpsInterpreter or userOpsInterpreter
+  val interpreters: ExercisesApp ~> Task =
+    exerciseOpsInterpreter or userOpsInterpreter or dbResultsInterpreter
 
   /** Lifts Exercise Ops to an effect capturing Monad such as Task via natural transformations
     */
@@ -36,10 +37,18 @@ class ProdInterpreters(implicit transactor: Transactor[Task]) {
     def apply[A](fa: UserOp[A]): Task[A] = fa match {
       case GetUsers()            ⇒ UserDoobieStore.all.transact(transactor)
       case GetUserByLogin(login) ⇒ UserDoobieStore.getByLogin(login).transact(transactor)
-      // FIXME: Option[User] doesn't unify with A or other higher-kinded types like Xor
-      // case CreateUser(newUser)   ⇒ UserDoobieStore.create(newUser).transact(transactor)
-      // case UpdateUser(user)      ⇒ UserDoobieStore.update(user).transact(transactor)
+      case CreateUser(newUser)   ⇒ UserDoobieStore.create(newUser).transact(transactor)
+      case UpdateUser(user)      ⇒ UserDoobieStore.update(user).map(_.isDefined).transact(transactor)
       case DeleteUser(user)      ⇒ UserDoobieStore.delete(user.id).transact(transactor)
+    }
+  }
+
+  /** Lifts DB results to an effect capturing Monad such as Task via natural transformations
+    */
+  def dbResultsInterpreter: DBResult ~> Task = new (DBResult ~> Task) {
+    def apply[A](fa: DBResult[A]): Task[A] = fa match {
+      case DBSuccess(result) ⇒ Task.now(result)
+      case DBFailure(error)  ⇒ Task.fail(error)
     }
   }
 }
