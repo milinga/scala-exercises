@@ -88,8 +88,8 @@ class OAuth2Controller(implicit userService: UserServices) extends Controller {
             htmlUrl,
             email
           ).run match {
-            case Some(_) ⇒ Redirect("/").withSession("oauth-token" → authToken, "user" → login)
-            case _       ⇒ InternalServerError("Failed to save user information")
+            case Xor.Right(_) ⇒ Redirect("/").withSession("oauth-token" → authToken, "user" → login)
+            case _            ⇒ InternalServerError("Failed to save user information")
           }
 
         }
