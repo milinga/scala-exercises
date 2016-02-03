@@ -80,17 +80,16 @@ class OAuth2Controller(implicit userService: UserServices) extends Controller {
           val htmlUrl = (response.json \ "html_url").as[String]
           val email = (response.json \ "email").as[String]
 
-          val result = userService.getUserOrCreate(
+          userService.getUserOrCreate(
             login,
             name,
             githubId.toString,
             avatarUrl,
             htmlUrl,
             email
-          )
-          result match {
-            case Xor.Right(_) ⇒ Redirect("/").withSession("oauth-token" → authToken, "user" → login)
-            case Xor.Left(_)  ⇒ InternalServerError("Failed to save user information")
+          ).run match {
+            case Some(_) ⇒ Redirect("/").withSession("oauth-token" → authToken, "user" → login)
+            case _       ⇒ InternalServerError("Failed to save user information")
           }
 
         }
